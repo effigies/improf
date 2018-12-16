@@ -28,13 +28,10 @@ def main():
 
     fingerprints = []
 
-    def load_module(*modules):
+    for modules in module_list:
         for module in modules:
             import_module(module)
         fingerprints.append((modules[0], fingerprint()))
-
-    for modules in module_list:
-        load_module(*modules)
 
     diffs = [
         (y[0], diff_fingerprint(y[1], x[1]))
