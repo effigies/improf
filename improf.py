@@ -4,7 +4,7 @@ import psutil
 import time
 from importlib import import_module
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 P = psutil.Process()
 
@@ -25,7 +25,9 @@ def main():
     module_list = [['sys']] + [arg.split(',') for arg in sys.argv[1:]]
 
     if module_list == [['sys']]:
-        print("Usage: {} MODULE_GROUP [MODULE_GROUP [...]]")
+        import os
+        cmd = os.path.basename(sys.argv[0])
+        print("Usage: {} MODULE_GROUP [MODULE_GROUP [...]]".format(cmd))
         sys.exit(0)
 
     fingerprints = []
