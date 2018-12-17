@@ -1,4 +1,4 @@
-# import-profiler
+# improf
 
 This import profiler is meant to be a lightweight diagnostic tool for identifying the costs of
 a given import or series of imports.
@@ -18,7 +18,7 @@ Suppose I want to find out what the major contributors are to `patsy`'s loading 
 footprint.
 
 ```Shell
-> import-profiler patsy
+> improf patsy
 patsy: 441 modules; 299.79ms, 149.8MiB
 Final: 441 modules; 299.79ms, 149.8MiB
 
@@ -121,7 +121,7 @@ Looking through this, I may decide that `numpy` is likely the majority of the lo
 insert it before `patsy`:
 
 ```Shell
-> import-profiler numpy patsy
+> improf numpy patsy
 numpy: 136 modules; 76.05ms, 116.4MiB
 patsy: 305 modules; 218.12ms, 32.7MiB
 Final: 441 modules; 294.17ms, 149.1MiB
@@ -198,7 +198,7 @@ allocation (the first significant import you specify will often take the blame f
 disproportionate amount of VM...). Perhaps most of it is actually Pandas?
 
 ```Shell
-> import-profiler numpy pandas patsy
+> improf numpy pandas patsy
 numpy: 136 modules; 74.99ms, 116.4MiB
 pandas: 282 modules; 221.35ms, 32.9MiB
 patsy: 23 modules; 12.90ms, 0.8MiB
