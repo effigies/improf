@@ -48,16 +48,31 @@ def main():
     fingerprints = FINGERPRINTS.copy()
     show = []
 
-    mem = module_list and module_list[0] != ['--no-mem']
-    if mem and 'psutil' not in module_list[0]:
-        module_list.insert(0, ['psutil'])
-    else:
+    # --show as first argument displays the sys and importlib module lists
+    if module_list and module_list[0] == ['--show']:
+        show += ['sys', 'importlib']
         module_list.pop(0)
+
+    mem = True
+    show_last = False
+
+    if module_list:
+        # --no-mem only has an effect before optional imports
+        if module_list[0] == ['--no-mem']:
+            mem = False
+            module_list.pop(0)
+        # psutil is implicitly imported if --no-mem is not set,
+        # so track it but do not duplicate an explicit request
+        elif 'psutil' not in module_list[0] and module_list[0] != ['--mem']:
+            module_list.insert(0, ['psutil'])
+
     for modules in module_list:
         show_last = True
-        if modules in (['--mem'], ['psutil']):
+        if modules == ['--mem']:
             mem = True
             modules = ['psutil']
+        elif 'psutil' in modules:
+            mem = True
         elif modules == ['--show']:
             show.append(fingerprints[-1][0])
             continue
