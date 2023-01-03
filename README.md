@@ -19,8 +19,11 @@ footprint.
 
 ```Shell
 > improf patsy
-patsy: 441 modules; 299.79ms, 149.8MiB
-Final: 441 modules; 299.79ms, 149.8MiB
+sys: 68 modules; 0.00ms, 0.0MiB
+importlib: 0 modules; 0.00ms, 0.0MiB
+psutil: 41 modules; 11.77ms, 19.4MiB
+patsy: 493 modules; 198.46ms, 703.1MiB
+Final: 602 modules; 210.23ms, 722.5MiB
 
 Modules loaded with patsy:
 {'_ast',
@@ -122,9 +125,12 @@ insert it before `patsy`:
 
 ```Shell
 > improf numpy patsy
-numpy: 136 modules; 76.05ms, 116.4MiB
-patsy: 305 modules; 218.12ms, 32.7MiB
-Final: 441 modules; 294.17ms, 149.1MiB
+sys: 68 modules; 0.00ms, 0.0MiB
+importlib: 0 modules; 0.00ms, 0.0MiB
+psutil: 41 modules; 11.80ms, 19.4MiB
+numpy: 128 modules; 48.26ms, 660.1MiB
+patsy: 365 modules; 122.67ms, 43.0MiB
+Final: 602 modules; 182.74ms, 722.5MiB
 
 Modules loaded with patsy:
 {'_csv',
@@ -199,10 +205,13 @@ disproportionate amount of VM...). Perhaps most of it is actually Pandas?
 
 ```Shell
 > improf numpy pandas patsy
-numpy: 136 modules; 74.99ms, 116.4MiB
-pandas: 282 modules; 221.35ms, 32.9MiB
-patsy: 23 modules; 12.90ms, 0.8MiB
-Final: 441 modules; 309.24ms, 150.1MiB
+sys: 68 modules; 0.00ms, 0.0MiB
+importlib: 0 modules; 0.00ms, 0.0MiB
+psutil: 41 modules; 11.91ms, 19.4MiB
+numpy: 128 modules; 48.25ms, 660.1MiB
+pandas: 342 modules; 119.37ms, 42.8MiB
+patsy: 23 modules; 3.18ms, 0.1MiB
+Final: 602 modules; 182.72ms, 722.4MiB
 
 Modules loaded with patsy:
 {'patsy',
@@ -212,6 +221,62 @@ Modules loaded with patsy:
 ```
 
 So we see `patsy` is pretty light, once you've imported Pandas.
+
+## Flag options
+
+### `--(no-)mem`
+
+Because we use psutil to collect memory footprints, you may miss imports in a tool
+that are shared with psutil. If you pass `--no-mem` as the first flag, then psutil
+is not loaded, and memory data is not collected until `--mem` or `psutil` is passed:
+
+```console
+> ./improf.py --no-mem numpy --mem pandas patsy
+sys: 68 modules; 0.00ms, 0.0MiB
+importlib: 0 modules; 0.00ms, 0.0MiB
+numpy: 148 modules; 53.79ms, 0.0MiB
+psutil: 21 modules; 10.63ms, 679.5MiB
+pandas: 342 modules; 116.02ms, 42.8MiB
+patsy: 23 modules; 3.19ms, 0.2MiB
+Final: 602 modules; 183.63ms, 722.4MiB
+
+Modules loaded with patsy:
+{'patsy',
+ 'patsy.build',
+ [...]
+ 'patsy.version'}
+```
+
+### `--(no-)show`
+
+To avoid printing out the modules of the last import, add `--no-show` to the end of
+the list. To print out the modules of a different import, add `--show` after that
+import.
+
+Combining with `--mem`/`--no-mem`, we can see the imports attributable to
+subprocess, separate from psutil:
+
+```console
+> improf --no-mem subprocess --show --mem numpy --no-show
+sys: 68 modules; 0.00ms, 0.0MiB
+importlib: 0 modules; 0.00ms, 0.0MiB
+subprocess: 10 modules; 2.15ms, 0.0MiB
+psutil: 31 modules; 9.53ms, 19.4MiB
+numpy: 128 modules; 47.15ms, 660.1MiB
+Final: 237 modules; 58.84ms, 679.5MiB
+
+Modules loaded with subprocess:
+{'_posixsubprocess',
+ '_weakrefset',
+ 'collections.abc',
+ 'fcntl',
+ 'math',
+ 'select',
+ 'selectors',
+ 'signal',
+ 'subprocess',
+ 'threading'}
+```
 
 ## Tips
 
@@ -227,7 +292,7 @@ So we see `patsy` is pretty light, once you've imported Pandas.
    like
 
        scipy: 275 modules; 263.28ms, 35.3MiB
-    
+
    while `scipy scipy.stats scipy.ndimage` would add three lines:
 
        scipy: 10 modules; 2.57ms, 0.1MiB
